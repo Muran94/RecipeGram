@@ -1,0 +1,40 @@
+version: '3'
+
+volumes:
+  bundle-volume:
+
+services:
+  db:
+    image: postgres:11.5-alpine
+    volumes:
+      - ./tmp/db:/var/lib/postgresql/data
+  web:
+    build: .
+    command: bash -c "rm -f tmp/pids/server.pid && rails s -p 3000 -b '0.0.0.0'"
+    volumes:
+      - .:/app:cached
+      - bundle-volume:/user/local/bundle
+      - /app/vendor
+      - /app/tmp
+      - /app/log
+      - /app/.git
+    ports:
+      - 3000:3000
+    depends_on:
+      - db
+    tty: true
+    stdin_open: true
+  # webpacker:
+  #   image: <image_name_from_web>:latest
+  #   command: ./bin/webpack-dev-server
+  #   volumes:
+  #     - .:/app:cached
+  #     - bundle-volume:/user/local/bundle:cached
+  #     - /app/vendor
+  #     - /app/tmp
+  #     - /app/log
+  #     - /app/.git
+  #   ports:
+  #     - 3035:3035
+  #   depends_on:
+  #     - web
